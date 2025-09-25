@@ -245,7 +245,7 @@ st.markdown(
     .big-title {
         font-size: 42px;
         font-weight: 700;
-        color: #2f2f2f;
+        color: white;
     }
     .card {
     background: #ffffff;
