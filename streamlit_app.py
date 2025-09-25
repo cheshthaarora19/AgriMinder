@@ -241,12 +241,12 @@ st.markdown(
         color: white;
     }
     .card {
-    background: #ffffff;
-    padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid #e6e6e6;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    min-height: 260px;   /* ✅ all cards same height */
+    background: #ffffff !important;
+    padding: 10px 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #e6e6e6!important ;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    margin: 5px 0 !important;   /* ✅ all cards same height */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
