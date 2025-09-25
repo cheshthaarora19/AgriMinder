@@ -118,28 +118,21 @@ def set_scheme_eligibility(scheme_id, eligible):
     conn.close()
 
 def get_sample_market_prices(crop=None, state=None):
-    # Hardcoded sample data (no DB needed)
-    sample_data = [
-        {"Crop": "Wheat", "State": "Delhi",  "Date": "2025-09-21", "Price": 2150},
-        {"Crop": "Wheat", "State": "Punjab", "Date": "2025-09-21", "Price": 2200},
-        {"Crop": "Wheat", "State": "Delhi",  "Date": "2025-09-20", "Price": 2100},
-        {"Crop": "Rice",  "State": "Kerala", "Date": "2025-09-21", "Price": 2800},
-        {"Crop": "Rice",  "State": "Bihar",  "Date": "2025-09-22", "Price": 2750},
-        {"Crop": "Rice",  "State": "Delhi",  "Date": "2025-09-22", "Price": 2900},
-        {"Crop": "Paddy", "State": "Haryana","Date": "2025-09-21", "Price": 2000},
-        {"Crop": "Maize", "State": "UP",     "Date": "2025-09-21", "Price": 1800},
-        {"Crop": "Sugarcane","State":"Maharashtra","Date":"2025-09-21","Price":3100},
-    ]
-    df = pd.DataFrame(sample_data)
-
-    # Filter by crop and state
+    conn = sqlite3.connect(str(DB_PATH))
+    cur = conn.cursor()
+    query = "SELECT crop, state, date, price FROM market_prices WHERE 1=1"
+    params = []
     if crop:
-        df = df[df["Crop"].str.lower() == crop.lower()]
+        query += " AND crop=?"
+        params.append(crop)
     if state:
-        df = df[df["State"].str.lower() == state.lower()]
-
+        query += " AND state=?"
+        params.append(state)
+    query += " ORDER BY date DESC"
+    rows = cur.execute(query, params).fetchall()
+    conn.close()
+    df = pd.DataFrame(rows, columns=["Crop", "State", "Date", "Price"])
     return df
-
 
 
 def get_settings():
@@ -245,7 +238,7 @@ st.markdown(
     .big-title {
         font-size: 42px;
         font-weight: 700;
-        color: white;
+        color: #2f2f2f;
     }
     .card {
     background: #ffffff;
@@ -280,7 +273,7 @@ st.markdown(
 
 # Sidebar
 with st.sidebar:
-    
+    st.image("assets/logo.png", width=64)
     st.markdown("##🌿AgriMinder")
     st.markdown("---")
     page = st.radio("", ["Dashboard","Reminders","Govt. Schemes","Market Watch","Settings"], index=0)
@@ -307,98 +300,101 @@ if page == "Dashboard":
 
 
     # Create 4 equal columns
-col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns(4)
 
-# --- Upcoming Reminders ---
-with col1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### 🗓️ Upcoming Reminders")
-    df = get_reminders()
-    if df.empty:
-        st.write("No scheduled tasks. Add a reminder in Reminders page.")
-    else:
-        upcoming = df[df["remind_at"] >= pd.Timestamp.now()].head(2)
-        for _, row in upcoming.iterrows():
-            st.markdown(f"**{row.title}**  \n{row.desc}  \n{row.remind_at.strftime('%b %d, %Y %I:%M %p')}")
-            st.write("")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Scheme Alerts ---
-with col2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### 🏛️ Scheme Alerts")
-
-    schemes = get_schemes()
-    important_keys = ["fasal bima", "pmfby", "kisan credit", "kcc"]
-    important = [s for s in schemes if any(k in s[1].lower() for k in important_keys)]
-
-    if not important:
-        important = schemes[:2]
-
-    for s in important:
-        dot = "🟢" if s[2] else "🟠"
-        st.markdown(f"{dot} **{s[1]}**")
-
-    st.write("")
-    if st.button("Check Eligibility"):
-        st.info("Go to Govt. Schemes page to update eligibility.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Quick Actions ---
-with col3:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### ⚡ Quick Actions")
-
-    if st.button("➕ Add Reminder"):
-        st.session_state.page = "Reminders"
-        st.rerun()
-
-    if st.button("🌾 Update Crops"):
-        st.session_state.page = "Crops"
-        st.rerun()
-
-    if st.button("📊 Market Prices"):
-        st.session_state.page = "Market Watch"
-        st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Weather Forecast ---
-with col4:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### 🌦️ Weather Forecast")
-
-    api_key = st.secrets.get("OPENWEATHER_API_KEY") if hasattr(st, "secrets") else None
-    if not api_key:
-        api_key = os.environ.get("OPENWEATHER_API_KEY", None)
-
-    city = st.text_input(
-        "City", 
-        value=st.session_state.get("sidebar_weather_city", "Delhi"), 
-        key="dashboard_weather_city"
-    )
-
-    weather_res = get_weather_forecast(city=city, api_key=api_key)
-
-    if weather_res.get("error"):
-        st.error(weather_res.get("message", "Error fetching weather"))
-    else:
-        data = weather_res.get("data", [])
-        if not data:
-            st.info("No forecast data available.")
+    # --- Upcoming Reminders ---
+    with col1:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### 🗓️ Upcoming Reminders")
+        df = get_reminders()
+        if df.empty:
+            st.write("No scheduled tasks. Add a reminder in Reminders page.")
         else:
-            for f in data[:2]:
-                st.markdown(
-                    f"""
-                    <div class='weather-line'>
-                    📅 <b>{f['date']}</b><br>
-                    🌡 {f['temp']}°C &nbsp; | &nbsp; 💧 {f['humidity']}% &nbsp; | &nbsp; 💨 {f['wind']} m/s<br>
-                    <i>{f['weather'].capitalize()}</i>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-    st.markdown("</div>", unsafe_allow_html=True)
+            upcoming = df[df["remind_at"] >= pd.Timestamp.now()].head(2)
+            for _, row in upcoming.iterrows():
+                st.markdown(f"**{row.title}**  \n{row.desc}  \n{row.remind_at.strftime('%b %d, %Y %I:%M %p')}")
+                st.write("")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- Scheme Alerts ---
+    with col2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### 🏛️ Scheme Alerts")
+
+        schemes = get_schemes()  # list of tuples (id, name, eligible)
+
+        # DEBUG: uncomment the next line if you want to see exactly what's in the DB
+        # st.write("DEBUG - all schemes:", schemes)
+
+        # Find scheme ids for PMFBY and KCC using robust substring matching (case-insensitive)
+        important_keys = ["fasal bima", "pmfby", "kisan credit", "kcc"]
+        important = []
+        for s in schemes:
+            name_lower = s[1].lower()
+            if any(k in name_lower for k in important_keys):
+                important.append(s)
+
+        # Fallback: if we didn't find both, just pick the top 2 schemes from the DB
+        if not important:
+            important = schemes[:2]
+
+        # Display only the important schemes
+        for s in important:
+            dot = "🟢" if s[2] else "🟠"
+            st.markdown(f"{dot} **{s[1]}**")
+
+        st.write("")  # spacing
+        if st.button("Check Eligibility"):
+            st.info("Go to Govt. Schemes page to update eligibility.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # --- Quick Actions ---
+    with col3:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### ⚡ Quick Actions")
+        if st.button("Add sample reminder"):
+            add_reminder(
+                "Irrigate Wheat Field",
+                "Irrigate the main wheat field",
+                (pd.Timestamp.now()+pd.Timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+            )
+            st.success("Sample reminder added.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- Weather Forecast ---
+    with col4:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### 🌦️ Weather Forecast")
+
+        api_key = st.secrets.get("OPENWEATHER_API_KEY") if hasattr(st, "secrets") else None
+        if not api_key:
+            api_key = os.environ.get("OPENWEATHER_API_KEY", None)
+
+        default_city = st.session_state.get("sidebar_default_city", "Delhi")
+        city = st.text_input("City", value=st.session_state.get("sidebar_weather_city", "Delhi"), key="dashboard_weather_city")
+
+        weather_res = get_weather_forecast(city=city, api_key=api_key)
+
+        if weather_res.get("error"):
+            st.error(weather_res.get("message", "Error fetching weather"))
+        else:
+            data = weather_res.get("data", [])
+            if not data:
+                st.info("No forecast data available.")
+            else:
+                for f in data[:2]:  # ✅ only today + tomorrow
+                    st.markdown(
+                        f"""
+                        <div class='weather-line'>
+                        📅 <b>{f['date']}</b><br>
+                        🌡 {f['temp']}°C &nbsp; | &nbsp; 💧 {f['humidity']}% &nbsp; | &nbsp; 💨 {f['wind']} m/s<br>
+                        <i>{f['weather'].capitalize()}</i>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- Reminders ----------
 elif page == "Reminders":
