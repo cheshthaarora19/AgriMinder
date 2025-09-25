@@ -357,28 +357,21 @@ if page == "Dashboard":
 
 
     # --- Quick Actions ---
-    import streamlit as st
-    
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### ⚡ Quick Actions")
-    
-    # Add Reminder button
-    if st.button("➕ Add Reminder", key="add_reminder"):
+    with col3:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### ⚡ Quick Actions")
+
+    if st.button("➕ Add Reminder"):
         st.session_state.page = "Reminders"
         st.rerun()
-    
-    # Update Crops button
-    if st.button("🌾 Update Crops", key="update_crops"):
-        st.session_state.page = "Crops"  # or "Settings" if that’s where crops live
-        st.rerun()
-    
-    # Market Prices button
-    if st.button("📊 Market Prices", key="market_prices"):
-        st.session_state.page = "Market Watch"
-        st.rerun()
-    
-    st.markdown("</div>", unsafe_allow_html=True)
 
+    if st.button("🌾 Update Crops"):
+        st.session_state.page = "Settings"
+        st.rerun()
+
+    if st.button("📊 Market Prices":
+        st.session_state.page = "Settings"
+        st.rerun()
 
     # --- Weather Forecast ---
     with col4:
