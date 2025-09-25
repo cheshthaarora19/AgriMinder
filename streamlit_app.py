@@ -242,10 +242,10 @@ st.markdown(
     }
     .card {
     background: #ffffff;
-    padding: 20px;
-    border-radius: 16px;
+    padding: 10px 12px;
+    border-radius: 6px;
     border: 1px solid #e6e6e6;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     min-height: 260px;   /* ✅ all cards same height */
     display: flex;
     flex-direction: column;
