@@ -273,6 +273,39 @@ st.markdown(
     .stButton > button:hover {
         background-color: #45a049;
     }
+
+    /* Fix dropdown (selectbox) colors */
+    .stSelectbox [data-baseweb="select"] {
+        background-color: #ffffff !important;   /* white background */
+        color: #3E2723 !important;              /* dark brown text */
+        border: 1px solid #ccc !important;
+        border-radius: 6px !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Dropdown selected value */
+    .stSelectbox [data-baseweb="select"] div {
+        color: #3E2723 !important;
+    }
+    
+    /* Add Reminder button styling */
+    .stButton > button {
+        background: linear-gradient(180deg, #72BF4A 0%, #4EA036 100%) !important; /* green gradient */
+        color: #fff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 3px 0 rgba(0,0,0,0.15) !important;
+    }
+    
+    /* Hover effect for button */
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+        cursor: pointer;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
