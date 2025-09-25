@@ -357,21 +357,17 @@ if page == "Dashboard":
 
 
     # --- Quick Actions ---
-    with col3:
+     with col3:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("### ⚡ Quick Actions")
-
-    if st.button("➕ Add Reminder"):
-        st.session_state.page = "Reminders"
-        st.rerun()
-
-    if st.button("🌾 Update Crops"):
-        st.session_state.page = "Settings"
-        st.rerun()
-
-    if st.button("📊 Market Prices"):
-        st.session_state.page = "Settings"
-        st.rerun()
+        if st.button("Add sample reminder"):
+            add_reminder(
+                "Irrigate Wheat Field",
+                "Irrigate the main wheat field",
+                (pd.Timestamp.now()+pd.Timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+            )
+            st.success("Sample reminder added.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Weather Forecast ---
     with col4:
