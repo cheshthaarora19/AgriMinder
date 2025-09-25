@@ -280,8 +280,8 @@ st.markdown(
 
 # Sidebar
 with st.sidebar:
-    st.image("assets/logo.png", width=64)
-    st.markdown("## AgriMinder")
+    
+    st.markdown("##🌿AgriMinder")
     st.markdown("---")
     page = st.radio("", ["Dashboard","Reminders","Govt. Schemes","Market Watch","Settings"], index=0)
     st.markdown("---")
@@ -294,8 +294,7 @@ with st.sidebar:
         st.markdown("**Farmer**")
 
     st.markdown("---")
-    st.caption("Weather settings (optional)")
-    st.text_input("Default city for weather", value="Delhi", key="sidebar_default_city")
+
 
 
 # ---------- Dashboard ----------
