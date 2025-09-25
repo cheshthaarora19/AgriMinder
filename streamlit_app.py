@@ -369,7 +369,7 @@ if page == "Dashboard":
         st.session_state.page = "Settings"
         st.rerun()
 
-    if st.button("📊 Market Prices":
+    if st.button("📊 Market Prices"):
         st.session_state.page = "Settings"
         st.rerun()
 
